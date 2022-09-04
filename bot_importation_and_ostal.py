@@ -1,3 +1,4 @@
+import logging
 import os
 
 from aiogram import Bot, Dispatcher
@@ -10,6 +11,8 @@ from aiogram.utils import executor
 from bot_database import *
 from bot_youtube import *
 from bot_weather import *
+
+logging.basicConfig(level=logging.INFO)
 
 bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())

@@ -1,3 +1,5 @@
+from aiogram.types import BotCommand
+
 from bot_importation_and_ostal import *
 
 
