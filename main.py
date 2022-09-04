@@ -27,6 +27,11 @@ async def start_perform(message: Message):
         await States.delete_access_start.set()
 
 
+@dp.message_handler(state='*', commands=['cancel'])
+async def cancel_def(message: Message, state: FSMContext):
+    await state.finish()
+
+
 @dp.message_handler(state=States.delete_access_start)
 async def check_start_def(message: Message, state: FSMContext):
     await bot.delete_message(message.chat.id, message.message_id - 2)
