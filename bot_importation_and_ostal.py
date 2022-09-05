@@ -18,6 +18,8 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())
 
+path = ''
+
 
 class States(StatesGroup):
     check_access_state = State()

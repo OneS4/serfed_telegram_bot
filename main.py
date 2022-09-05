@@ -1,12 +1,5 @@
 from bot_importation_and_ostal import *
 
-logging.basicConfig(level=logging.INFO)
-
-bot = Bot(os.getenv('TOKEN'))
-dp = Dispatcher(bot, storage=MemoryStorage())
-
-path = ''
-
 
 @dp.message_handler(state='*', commands=['cancel'])
 async def cancel_def(message: Message, state: FSMContext):
@@ -133,6 +126,7 @@ async def callback_main(callback: CallbackQuery, state: FSMContext):
     elif callback.data == 'upload_files':
         await States.upload_files.set()
         await callback.message.answer('Enter the folder name:')
+    await callback.answer()
 
 
 @dp.message_handler(state=States.check_access_state)
