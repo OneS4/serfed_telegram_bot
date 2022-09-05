@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -23,3 +24,8 @@ class States(StatesGroup):
     delete_access_start = State()
     video_state = State()
     playlist_state = State()
+    create_dir = State()
+    delete_dir = State()
+    load_files = State()
+    upload_files = State()
+    send_files = State()

@@ -1,9 +1,19 @@
-from aiogram.types import BotCommand
-
 from bot_importation_and_ostal import *
 
+logging.basicConfig(level=logging.INFO)
 
-@dp.message_handler(commands=['start', 'video', 'playlist', 'weather'])
+bot = Bot(os.getenv('TOKEN'))
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+path = ''
+
+
+@dp.message_handler(state='*', commands=['cancel'])
+async def cancel_def(message: Message, state: FSMContext):
+    await state.finish()
+
+
+@dp.message_handler(commands=['start', 'video', 'playlist', 'weather', 'files'])
 async def start_perform(message: Message):
     add_user_db(message.from_user.id)
     check_access_bool = check_access(message.from_user.id)
@@ -23,15 +33,29 @@ async def start_perform(message: Message):
                 [InlineKeyboardButton('Tashkent', callback_data='tashkent-5331'),
                  InlineKeyboardButton('Kungrad', callback_data='kungrad-323387')]
             ]))
+        elif message.text == '/files':
+            if not os.path.isdir(f"user_files/{message.from_user.id}"):
+                os.mkdir(f"user_files/{message.from_user.id}")
+            list_files = ''
+            os.chdir(f"user_files/{message.from_user.id}")
+            for dirpach, dirnames, dirfiles in os.walk(f'.'):
+                if dirfiles:
+                    list_files += 'There are files' + '\n'
+                else:
+                    list_files += 'There are no files' + '\n'
+                for dirname in dirnames:
+                    list_files += 'Catalog: ' + os.path.join(dirpach, dirname) + ' - '
+            os.chdir('../../')
+            await message.answer((list_files or 'Empty'), reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [InlineKeyboardButton('Create a directory', callback_data='create_dir'),
+                 InlineKeyboardButton('Delete a directory', callback_data='delete_dir')],
+                [InlineKeyboardButton('Load files', callback_data='load_files'),
+                 InlineKeyboardButton('Upload files', callback_data='upload_files')]
+            ]))
     elif not check_access_bool and message.chat.id == message.from_user.id:
         await message.answer('Get access to the bot:', reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[[InlineKeyboardButton('Get', callback_data='check_access')]]))
         await States.delete_access_start.set()
-
-
-@dp.message_handler(state='*', commands=['cancel'])
-async def cancel_def(message: Message, state: FSMContext):
-    await state.finish()
 
 
 @dp.message_handler(state=States.delete_access_start)
@@ -97,6 +121,18 @@ async def callback_main(callback: CallbackQuery, state: FSMContext):
                     f"Ночью: {weather['temperature_night'][i]} ℃"
         await callback.message.answer(text, parse_mode='HTML')
         await callback.message.delete()
+    elif callback.data == 'create_dir':
+        await States.create_dir.set()
+        await callback.message.answer('Enter the folder name:')
+    elif callback.data == 'delete_dir':
+        await States.delete_dir.set()
+        await callback.message.answer('Enter the folder name:')
+    elif callback.data == 'load_files':
+        await States.load_files.set()
+        await callback.message.answer('Enter the folder name:')
+    elif callback.data == 'upload_files':
+        await States.upload_files.set()
+        await callback.message.answer('Enter the folder name:')
 
 
 @dp.message_handler(state=States.check_access_state)
@@ -126,6 +162,62 @@ async def video_def(message: Message, state: FSMContext):
                               InlineKeyboardButton('480p', callback_data='480p')],
                              [InlineKeyboardButton('720p', callback_data='720p')]
                          ]))
+
+
+@dp.message_handler(state=[States.create_dir, States.delete_dir])
+async def create_delete_dir_def(message: Message, state: FSMContext):
+    if (await state.get_state()) == 'States:create_dir':
+        # noinspection PyBroadException
+        try:
+            if not os.path.isdir(f"user_files/{message.from_user.id}/{message.text}"):
+                os.makedirs(f"user_files/{message.from_user.id}/{message.text}")
+        except:
+            await message.answer('Failed to create directory')
+    elif (await state.get_state()) == 'States:delete_dir':
+        # noinspection PyBroadException
+        try:
+            if os.path.isdir(f"user_files/{message.from_user.id}/{message.text}"):
+                shutil.rmtree(f"user_files/{message.from_user.id}/{message.text}")
+        except:
+            await message.answer('Failed to delete directory')
+    await state.finish()
+
+
+@dp.message_handler(state=[States.load_files, States.upload_files])
+async def load_upload_files_def(message: Message, state: FSMContext):
+    global path
+    if (await state.get_state()) == 'States:load_files':
+        # noinspection PyBroadException
+        try:
+            if not os.path.isdir(f"user_files/{message.from_user.id}/{message.text}"):
+                os.makedirs(f"user_files/{message.from_user.id}/{message.text}")
+            path = f"user_files/{message.from_user.id}/{message.text}"
+            await States.send_files.set()
+            await message.answer('Send your files, then use the /cancel command to complete:')
+        except:
+            await state.finish()
+            await message.answer('Failed to create directory')
+    else:
+        # noinspection PyBroadException
+        try:
+            path = f"user_files/{message.from_user.id}/{message.text}"
+            dirfiles = os.listdir(path)
+            files = []
+            for i, file in enumerate([(path + '/' + file) for file in dirfiles]):
+                if os.path.isfile(file):
+                    files.append(dirfiles[i])
+            for document in files:
+                await message.answer_document(document)
+            await state.finish()
+        except:
+            await state.finish()
+            await message.answer('This directory was not found')
+
+
+@dp.message_handler(state=States.send_files, content_types=['document'])
+async def send_files_def(message: Message):
+    global path
+    open(f'{path}/{message.document.file_id}', 'w')
 
 
 executor.start_polling(dp, skip_updates=True)
