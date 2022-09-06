@@ -64,6 +64,16 @@ def check_on_off_new_left_def(group_id, switch):
         cur = con.cursor()
         group_id = str(group_id)
 
+        cur.execute('''
+                    CREATE TABLE IF NOT EXISTS groups(
+                    id TEXT NOT NULL PRIMARY KEY,
+                    deleting_login_messages TEXT NOT NULL DEFAULT 'no',
+                    deleting_exit_messages TEXT NOT NULL DEFAULT 'no')
+                ''')
+
+        if not cur.execute('SELECT id FROM groups WHERE id = ?', [group_id]).fetchone():
+            cur.execute('INSERT INTO groups(id) VALUES(?)', [group_id])
+
         if switch == 'new_chat_members':
             if cur.execute('SELECT deleting_login_messages FROM groups WHERE id = ?', [group_id]).fetchone()[
                 0] == 'yes':
@@ -95,5 +105,17 @@ def add_new_user_call_all(user_id, group_id):
         cur = con.cursor()
         group_id = '_' + str(group_id)[1:]
 
+        cur.execute("CREATE TABLE IF NOT EXISTS " + group_id + "(user_id TEXT NOT NULL PRIMARY KEY)")
+
         if not cur.execute('SELECT user_id FROM ' + group_id + ' WHERE user_id = ?', [user_id]).fetchone():
             cur.execute('INSERT INTO ' + group_id + ' (user_id) VALUES(?)', [user_id])
+
+def delete_user_call_all(user_id, group_id):
+    with sqlite3.connect('bot_data.db') as con:
+        cur = con.cursor()
+        group_id = '_' + str(group_id)[1:]
+
+        cur.execute("CREATE TABLE IF NOT EXISTS " + group_id + "(user_id TEXT NOT NULL PRIMARY KEY)")
+
+        if cur.execute('SELECT user_id FROM ' + group_id + ' WHERE user_id = ?', [user_id]).fetchone():
+            cur.execute('DELETE FROM ' + group_id + ' WHERE user_id = ?', [user_id])

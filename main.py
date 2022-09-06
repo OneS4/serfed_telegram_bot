@@ -35,6 +35,7 @@ async def new_member_def(message: Message):
 
 @dp.message_handler(content_types=['left_chat_member'])
 async def left_member_def(message: Message):
+    delete_user_call_all(message['left_chat_member']['id'], message.chat.id)
     if check_on_off_new_left_def(message.chat.id, 'left_chat_member'):
         await message.delete()
 
