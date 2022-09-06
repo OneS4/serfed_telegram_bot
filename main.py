@@ -4,6 +4,7 @@ from bot_importation_and_ostal import *
 async def on_startup(_):
     global botname, bot_id
     await bot.set_my_commands([
+        BotCommand('call_everyone', 'Call everyone in the group'),
         BotCommand('on_del_login', 'Enable deletion of group member login messages'),
         BotCommand('on_del_exit',
                    'Enable the deletion of the exit messages of the participants from the group'),
@@ -97,15 +98,23 @@ async def main(message: Message):
                                              for user_id in (await message.chat.get_administrators())]:
                 new_left_del(message.chat.id, message.text, botname)
                 await message.delete()
-        elif message.text == '/call_everyone':
+        elif message.text == f'/call_everyone{botname}':
             users_list = ''
-            for i, user in enumerate(call_all(message.chat.id,
-                                              filter(lambda admin: admin != bot_id, [admin['user']['id'] for admin in (
-                                                      await message.chat.get_administrators())]))):
-                if i != 0:
-                    users_list += '\n'
-                users_list += f'[Account](tg://user?id={user})'
-            await message.answer(users_list, parse_mode=ParseMode.MARKDOWN_V2)
+            for user in filter(lambda user: user != bot_id, map(lambda user: user.id, (
+                    await client.get_participants(message.chat.id)))):
+                if 'is_anonymous' in (await message.chat.get_member(user)).iter_keys():
+                    if not (await message.chat.get_member(user))['is_anonymous']:
+                        users_list += f'[Account](tg://user?id={user})\n'
+                else:
+                    users_list += f'[Account](tg://user?id={user})\n'
+            await message.answer(users_list[:-1], parse_mode=ParseMode.MARKDOWN_V2)
+            # for i, user in enumerate(call_all(message.chat.id,
+            #                                 filter(lambda admin: admin != bot_id, [admin['user']['id'] for admin in (
+            #                                           await message.chat.get_administrators())]))):
+            #     if i != 0:
+            #         users_list += '\n'
+            #     users_list += f'[Account](tg://user?id={user})'
+            # await message.answer(users_list, parse_mode=ParseMode.MARKDOWN_V2)
     elif not check_access_bool and message.chat.id == message.from_user.id:
         await message.answer('Get access to the bot:', reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[[InlineKeyboardButton('Get', callback_data='check_access')]]))

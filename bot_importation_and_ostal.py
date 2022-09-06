@@ -10,6 +10,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
     BotCommandScope, bot_command_scope
 from aiogram.utils import executor
 from aiogram.types import ParseMode
+from telethon import TelegramClient
 
 from bot_database import *
 from bot_youtube import *
@@ -19,6 +20,8 @@ logging.basicConfig(level=logging.INFO)
 
 bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())
+client = TelegramClient('session_name', int(os.getenv('api_id')), os.getenv('api_hash'))
+client.start()
 
 path = ''
 botname = ''
