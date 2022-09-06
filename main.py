@@ -22,9 +22,12 @@ async def start_perform(message: Message):
             await message.answer('Send a link to the playlist:')
             await States.playlist_state.set()
         elif message.text == '/weather':
-            await message.answer('Choose a city', reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+            await message.answer('Choose a city:', reply_markup=InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton('Tashkent', callback_data='tashkent-5331'),
-                 InlineKeyboardButton('Kungrad', callback_data='kungrad-323387')]
+                 InlineKeyboardButton('Kungrad', callback_data='kungrad-323387')],
+                [InlineKeyboardButton('Moscow', callback_data='moscow-4368'),
+                 InlineKeyboardButton('Kazan', callback_data='kazan-4364')],
+                [InlineKeyboardButton('Minsk', callback_data='minsk-4248')]
             ]))
         elif message.text == '/files':
             if not os.path.isdir(f"user_files/{message.from_user.id}"):
@@ -104,7 +107,7 @@ async def callback_main(callback: CallbackQuery, state: FSMContext):
                         'permission is not available for download')
             await bot.delete_message(callback.message.chat.id, message_id)
         await state.finish()
-    elif callback.data in ['tashkent-5331', 'kungrad-323387']:
+    elif callback.data in ['tashkent-5331', 'kungrad-323387', 'moscow-4368', 'kazan-4364', 'minsk-4248']:
         weather = find_weather(callback.data)
         text = ''
         for i in range(14):
