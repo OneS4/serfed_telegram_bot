@@ -6,8 +6,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputFile
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InputFile, BotCommand, \
+    BotCommandScope, bot_command_scope
 from aiogram.utils import executor
+from aiogram.types import ParseMode
 
 from bot_database import *
 from bot_youtube import *
@@ -19,6 +21,8 @@ bot = Bot(os.getenv('TOKEN'))
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 path = ''
+botname = ''
+bot_id = ''
 
 
 class States(StatesGroup):
