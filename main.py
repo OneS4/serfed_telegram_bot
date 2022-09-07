@@ -47,7 +47,7 @@ async def cancel_def(message: Message, state: FSMContext):
 
 
 @dp.message_handler(
-    commands=['start', 'playlist', 'weather', 'files', 'on_del_login', 'on_del_exit', # 'video'
+    commands=['start', 'video', 'playlist', 'weather', 'files', 'on_del_login', 'on_del_exit',
               'off_del_login', 'off_del_exit', 'call_everyone'])
 async def main(message: Message):
     add_user_db(message.from_user.id)
