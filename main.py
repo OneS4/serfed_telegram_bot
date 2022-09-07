@@ -240,9 +240,10 @@ async def create_delete_dir_def(message: Message, state: FSMContext):
     elif (await state.get_state()) == 'States:delete_dir':
         # noinspection PyBroadException
         try:
-            if os.path.isdir(f"user_files/{message.from_user.id}/{message.text}"):
+            if os.path.isdir(f"user_files/{message.from_user.id}/{message.text}") and message.text != '.':
                 shutil.rmtree(f"user_files/{message.from_user.id}/{message.text}")
         except:
+
             await message.answer('Failed to delete directory')
     await state.finish()
 
